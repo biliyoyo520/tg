@@ -23,8 +23,8 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y \
           libreadline-dev libconfig-dev libssl-dev lua5.2 liblua5.2-dev \
-          libevent-dev libjansson-dev libpython-dev make
-
+          libevent-dev libjansson-dev libpython3-dev make
+      
     - name: Configure build
       run: |
         if [ "${{ matrix.build_type }}" = "static" ]; then
