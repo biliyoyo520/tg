@@ -33,6 +33,10 @@ jobs:
           ./configure
         fi
 
+    - name: Remove -Werror from Makefile
+      run: |
+        sed -i 's/-Werror//g' Makefile
+
     - name: Compile telegram-cli
       run: make
 
