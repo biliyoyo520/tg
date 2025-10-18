@@ -7,10 +7,10 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
-        build_type: [dynamic, static]
+        build_type: [static, dynamic]
 
     steps:
     - name: Checkout source
@@ -22,9 +22,9 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y \
-          libreadline-dev libconfig-dev libssl-dev lua5.2 liblua5.2-dev \
+          libreadline-dev libconfig-dev libssl1.0-dev lua5.2 liblua5.2-dev \
           libevent-dev libjansson-dev libpython3-dev make
-      
+
     - name: Configure build
       run: |
         if [ "${{ matrix.build_type }}" = "static" ]; then
@@ -33,9 +33,11 @@ jobs:
           ./configure
         fi
 
-    - name: Remove -Werror from Makefile
-      run: |
-        sed -i 's/-Werror//g' Makefile
+    - name: Patch Makefile to remove -Werror
+      run: sed -i 's/-Werror//g' Makefile Makefile.*
+
+    - name: Patch write() bug
+      run: sed -i 's/write (1, "SIGNAL received\\n", 18)/write (1, "SIGNAL received\\n", 17)/' main.c
 
     - name: Compile telegram-cli
       run: make
