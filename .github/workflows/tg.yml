@@ -1,0 +1,48 @@
+name: Build Telegram CLI
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build_type: [dynamic, static]
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libreadline-dev libconfig-dev libssl-dev lua5.2 liblua5.2-dev \
+          libevent-dev libjansson-dev libpython-dev make
+
+    - name: Configure build
+      run: |
+        if [ "${{ matrix.build_type }}" = "static" ]; then
+          ./configure --enable-static
+        else
+          ./configure
+        fi
+
+    - name: Compile telegram-cli
+      run: make
+
+    - name: Rename output binary
+      run: |
+        mkdir -p output
+        cp bin/telegram-cli output/telegram-cli-${{ matrix.build_type }}
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: telegram-cli-${{ matrix.build_type }}
+        path: output/telegram-cli-${{ matrix.build_type }}
